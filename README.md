@@ -10,6 +10,10 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## Postman API Endpoints Collection
+
+You can download the [Postman Collection](https://www.getpostman.com/collections/4723abd2de317b7a8071) that I created to test this project.
+
 ## Learn more
 
   * Official website: https://www.phoenixframework.org/
