@@ -18,7 +18,11 @@ defmodule TodoJsonApi.Todos do
 
   """
   def list_todos do
-    Repo.all(Todo)
+    from(
+      item in Todo,
+      order_by: [asc: :priority]
+    )
+    |> Repo.all()
   end
 
   @doc """
