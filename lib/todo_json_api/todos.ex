@@ -56,6 +56,8 @@ defmodule TodoJsonApi.Todos do
   def create_todo(attrs \\ %{}) do
     current_record_count = Repo.aggregate(from(t in Todo), :count)
 
+    update_priority()
+
     %Todo{}
     |> Todo.create_changeset(attrs, current_record_count)
     |> Repo.insert()
@@ -92,7 +94,11 @@ defmodule TodoJsonApi.Todos do
 
   """
   def delete_todo(%Todo{} = todo) do
-    Repo.delete(todo)
+    delete_result = Repo.delete(todo)
+
+    update_priority()
+
+    delete_result
   end
 
   @doc """
@@ -106,5 +112,22 @@ defmodule TodoJsonApi.Todos do
   """
   def change_todo(%Todo{} = todo, attrs \\ %{}) do
     Todo.changeset(todo, attrs)
+  end
+
+  # Reorders the list of items in Todo table based on priority, in ascending manner
+  defp update_priority() do
+    Repo.all(
+      from(
+        item in Todo,
+        order_by: [asc: :priority]
+      )
+    )
+    |> Enum.with_index(1)
+    |> Enum.map(fn {item, index} ->
+      # update_todo(item, %{priority: index})
+      item
+      |> Todo.changeset(%{priority: index})
+      |> Repo.update()
+    end)
   end
 end
