@@ -14,7 +14,16 @@ defmodule TodoJsonApi.Todos.Todo do
   end
 
   @doc false
+  def create_changeset(todo, attrs, current_record_count) do
+    # need to add validate_inclusion based on the current count in table + 1
+    todo
+    |> cast(attrs, [:task, :priority, :details, :is_complete])
+    |> change(priority: current_record_count + 1)
+    |> validate_required([:task, :priority, :details, :is_complete])
+  end
+
   def changeset(todo, attrs) do
+    # need to add validate_inclusion based on the current count in table + 1
     todo
     |> cast(attrs, [:task, :priority, :details, :is_complete])
     |> validate_required([:task, :priority, :details, :is_complete])

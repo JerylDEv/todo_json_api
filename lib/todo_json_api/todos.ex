@@ -54,8 +54,10 @@ defmodule TodoJsonApi.Todos do
 
   """
   def create_todo(attrs \\ %{}) do
+    current_record_count = Repo.aggregate(from(t in Todo), :count)
+
     %Todo{}
-    |> Todo.changeset(attrs)
+    |> Todo.create_changeset(attrs, current_record_count)
     |> Repo.insert()
   end
 
