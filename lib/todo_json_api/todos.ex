@@ -76,9 +76,15 @@ defmodule TodoJsonApi.Todos do
 
   """
   def update_todo(%Todo{} = todo, attrs) do
-    todo
-    |> Todo.changeset(attrs)
-    |> Repo.update()
+    update_priority()
+
+    update_todo_result =
+      todo
+      |> Todo.changeset(attrs)
+      |> Repo.update()
+
+    update_priority()
+    update_todo_result
   end
 
   @doc """
@@ -124,7 +130,6 @@ defmodule TodoJsonApi.Todos do
     )
     |> Enum.with_index(1)
     |> Enum.map(fn {item, index} ->
-      # update_todo(item, %{priority: index})
       item
       |> Todo.changeset(%{priority: index})
       |> Repo.update()
