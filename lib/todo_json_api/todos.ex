@@ -76,15 +76,28 @@ defmodule TodoJsonApi.Todos do
 
   """
   def update_todo(%Todo{} = todo, attrs) do
-    update_priority()
+    if Map.has_key?(attrs, "priority") do
+      proposed_priority_change = Map.get(attrs, "priority")
+      current_record_count = Repo.aggregate(from(t in Todo), :count)
 
-    update_todo_result =
+      IO.puts(current_record_count)
+
+      if current_record_count >= proposed_priority_change do
+        current_todo_id = todo.id
+        move_todo(current_todo_id, proposed_priority_change)
+
+        todo
+        |> Todo.changeset(attrs)
+        |> Repo.update()
+      else
+        # Todo: Return JSON Error
+        IO.puts("Error!")
+      end
+    else
       todo
       |> Todo.changeset(attrs)
       |> Repo.update()
-
-    update_priority()
-    update_todo_result
+    end
   end
 
   @doc """
@@ -128,6 +141,36 @@ defmodule TodoJsonApi.Todos do
         order_by: [asc: :priority]
       )
     )
+    |> Enum.with_index(1)
+    |> Enum.map(fn {item, index} ->
+      item
+      |> Todo.changeset(%{priority: index})
+      |> Repo.update()
+    end)
+  end
+
+  # Move the todo in the todo list based on index
+  # Updates the todo priority afterwards
+  defp move_todo(current_todo_id, proposed_priority_change) do
+    todo_list =
+      Repo.all(
+        from(
+          item in Todo,
+          order_by: [asc: :priority]
+        )
+      )
+
+    current_todo_index =
+      todo_list
+      |> Enum.find_index(fn item ->
+        item.id == current_todo_id
+      end)
+
+    updated_todo_list =
+      todo_list
+      |> Enum.slide(current_todo_index, proposed_priority_change - 1)
+
+    updated_todo_list
     |> Enum.with_index(1)
     |> Enum.map(fn {item, index} ->
       item
