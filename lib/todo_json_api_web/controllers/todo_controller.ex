@@ -24,24 +24,37 @@ defmodule TodoJsonApiWeb.TodoController do
 
   def show(conn, %{"id" => id}) do
     todo = Todos.get_todo!(id)
-    render(conn, "show.json", todo: todo)
+
+    if Map.has_key?(todo, :error) do
+      render(conn, "error.json", todo)
+    else
+      render(conn, "show.json", todo: todo)
+    end
   end
 
   def update(conn, %{"id" => id, "todo" => todo_params}) do
     todo = Todos.get_todo!(id)
 
-    with {:ok, %Todo{} = todo} <- Todos.update_todo(todo, todo_params) do
-      render(conn, "show.json", todo: todo)
+    if Map.has_key?(todo, :error) do
+      render(conn, "error.json", todo)
     else
-      error -> conn |> render("error.json", error)
+      with {:ok, %Todo{} = todo} <- Todos.update_todo(todo, todo_params) do
+        render(conn, "show.json", todo: todo)
+      else
+        error -> conn |> render("error.json", error)
+      end
     end
   end
 
   def delete(conn, %{"id" => id}) do
     todo = Todos.get_todo!(id)
 
-    with {:ok, %Todo{}} <- Todos.delete_todo(todo) do
-      render(conn, "deleted.json", message: "Todo '#{id}' was deleted.")
+    if Map.has_key?(todo, :error) do
+      render(conn, "error.json", todo)
+    else
+      with {:ok, %Todo{}} <- Todos.delete_todo(todo) do
+        render(conn, "deleted.json", message: "Todo '#{id}' was deleted.")
+      end
     end
   end
 end

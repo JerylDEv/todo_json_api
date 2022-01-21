@@ -39,7 +39,17 @@ defmodule TodoJsonApi.Todos do
       ** (Ecto.NoResultsError)
 
   """
-  def get_todo!(id), do: Repo.get!(Todo, id)
+  def get_todo!(id) do
+    try do
+      Repo.get!(Todo, id)
+    rescue
+      Ecto.Query.CastError ->
+        %{error: "Todo not found."}
+
+      Ecto.NoResultsError ->
+        %{error: "Todo not found."}
+    end
+  end
 
   @doc """
   Creates a todo.
