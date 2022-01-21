@@ -64,47 +64,55 @@ defmodule TodoJsonApi.Todos do
 
   """
   def create_todo(attrs \\ %{}) do
-    if Map.has_key?(attrs, "priority") do
-      proposed_priority_change = Map.get(attrs, "priority")
-      current_record_count = Repo.aggregate(from(t in Todo), :count)
-      latest_index = current_record_count + 1
+    values_list = Map.values(attrs)
 
-      if proposed_priority_change in 1..latest_index do
-        if current_record_count == 0 do
-          updated_attrs = Map.put(attrs, "priority", latest_index)
+    if Enum.member?(values_list, nil) do
+      %{
+        error: "Invalid todo values"
+      }
+    else
+      if Map.has_key?(attrs, "priority") do
+        proposed_priority_change = Map.get(attrs, "priority")
+        current_record_count = Repo.aggregate(from(t in Todo), :count)
+        latest_index = current_record_count + 1
 
-          %Todo{}
-          |> Todo.changeset(updated_attrs)
-          |> Repo.insert()
-        else
-          {:ok, %Todo{} = todo} =
+        if proposed_priority_change in 1..latest_index do
+          if current_record_count == 0 do
+            updated_attrs = Map.put(attrs, "priority", latest_index)
+
             %Todo{}
-            |> Todo.changeset(attrs)
+            |> Todo.changeset(updated_attrs)
             |> Repo.insert()
+          else
+            {:ok, %Todo{} = todo} =
+              %Todo{}
+              |> Todo.changeset(attrs)
+              |> Repo.insert()
 
-          current_todo_id = todo.id
-          move_todo(current_todo_id, proposed_priority_change)
+            current_todo_id = todo.id
+            move_todo(current_todo_id, proposed_priority_change)
 
-          todo
-          |> Todo.changeset(attrs)
-          |> Repo.update()
+            todo
+            |> Todo.changeset(attrs)
+            |> Repo.update()
+          end
+        else
+          %{
+            error:
+              "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{latest_index}]."
+          }
         end
       else
-        %{
-          error:
-            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{latest_index}]."
-        }
+        current_record_count = Repo.aggregate(from(t in Todo), :count)
+        latest_index = current_record_count + 1
+        updated_attrs = Map.put(attrs, "priority", latest_index)
+
+        update_priority()
+
+        %Todo{}
+        |> Todo.changeset(updated_attrs)
+        |> Repo.insert()
       end
-    else
-      current_record_count = Repo.aggregate(from(t in Todo), :count)
-      latest_index = current_record_count + 1
-      updated_attrs = Map.put(attrs, "priority", latest_index)
-
-      update_priority()
-
-      %Todo{}
-      |> Todo.changeset(updated_attrs)
-      |> Repo.insert()
     end
   end
 
@@ -121,27 +129,35 @@ defmodule TodoJsonApi.Todos do
 
   """
   def update_todo(%Todo{} = todo, attrs) do
-    if Map.has_key?(attrs, "priority") do
-      proposed_priority_change = Map.get(attrs, "priority")
-      current_record_count = Repo.aggregate(from(t in Todo), :count)
+    values_list = Map.values(attrs)
 
-      if proposed_priority_change in 1..current_record_count do
-        current_todo_id = todo.id
-        move_todo(current_todo_id, proposed_priority_change)
+    if Enum.member?(values_list, nil) do
+      %{
+        error: "Invalid todo values"
+      }
+    else
+      if Map.has_key?(attrs, "priority") do
+        proposed_priority_change = Map.get(attrs, "priority")
+        current_record_count = Repo.aggregate(from(t in Todo), :count)
 
+        if proposed_priority_change in 1..current_record_count do
+          current_todo_id = todo.id
+          move_todo(current_todo_id, proposed_priority_change)
+
+          todo
+          |> Todo.changeset(attrs)
+          |> Repo.update()
+        else
+          %{
+            error:
+              "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{current_record_count}]."
+          }
+        end
+      else
         todo
         |> Todo.changeset(attrs)
         |> Repo.update()
-      else
-        %{
-          error:
-            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{current_record_count}]."
-        }
       end
-    else
-      todo
-      |> Todo.changeset(attrs)
-      |> Repo.update()
     end
   end
 

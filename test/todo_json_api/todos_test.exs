@@ -60,7 +60,7 @@ defmodule TodoJsonApi.TodosTest do
     end
 
     test "create_todo/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Todos.create_todo(@invalid_nil_with_priority_attrs)
+      assert %{error: "Invalid todo values"} = Todos.create_todo(@invalid_nil_with_priority_attrs)
     end
 
     test "update_todo/2 with valid data updates the todo" do
@@ -83,8 +83,7 @@ defmodule TodoJsonApi.TodosTest do
     test "update_todo/2 with invalid data returns error priority out of allowed range" do
       todo = todo_fixture()
 
-      assert %{error: "Assigned 'priority' [] is out of allowed range [1 to 1]."} =
-               Todos.update_todo(todo, @invalid_nil_attrs)
+      assert %{error: "Invalid todo values"} = Todos.update_todo(todo, @invalid_nil_attrs)
 
       assert todo == Todos.get_todo!(todo.id)
     end

@@ -75,9 +75,7 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
     test "renders errors when data is invalid", %{conn: conn, todo: todo} do
       conn = put(conn, Routes.todo_path(conn, :update, todo), todo: @invalid_attrs)
 
-      assert json_response(conn, 200) == %{
-               "error" => "Assigned 'priority' [] is out of allowed range [1 to 1]."
-             }
+      assert json_response(conn, 200) == %{"error" => "Invalid todo values"}
     end
   end
 
