@@ -14,13 +14,6 @@ defmodule TodoJsonApi.Todos.Todo do
   end
 
   @doc false
-  def create_changeset(todo, attrs, current_record_count) do
-    todo
-    |> cast(attrs, [:task, :priority, :details, :is_complete])
-    |> change(priority: current_record_count + 1)
-    |> validate_required([:task, :priority, :details, :is_complete])
-  end
-
   def changeset(todo, attrs) do
     todo
     |> cast(attrs, [:task, :priority, :details, :is_complete])
