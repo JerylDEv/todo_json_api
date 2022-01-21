@@ -54,13 +54,34 @@ defmodule TodoJsonApi.Todos do
 
   """
   def create_todo(attrs \\ %{}) do
-    current_record_count = Repo.aggregate(from(t in Todo), :count)
+    if Map.has_key?(attrs, "priority") do
+      proposed_priority_change = Map.get(attrs, "priority")
+      current_record_count = Repo.aggregate(from(t in Todo), :count)
 
-    update_priority()
+      if current_record_count >= proposed_priority_change do
+        {:ok, %Todo{} = todo} =
+          %Todo{}
+          |> Todo.changeset(attrs)
+          |> Repo.insert()
 
-    %Todo{}
-    |> Todo.create_changeset(attrs, current_record_count)
-    |> Repo.insert()
+        current_todo_id = todo.id
+        move_todo(current_todo_id, proposed_priority_change)
+
+        todo
+        |> Todo.changeset(attrs)
+        |> Repo.update()
+      end
+    else
+      current_record_count = Repo.aggregate(from(t in Todo), :count)
+      latest_index = current_record_count + 1
+      updated_attrs = Map.put(attrs, "priority", latest_index)
+
+      update_priority()
+
+      %Todo{}
+      |> Todo.changeset(updated_attrs)
+      |> Repo.insert()
+    end
   end
 
   @doc """
@@ -80,8 +101,6 @@ defmodule TodoJsonApi.Todos do
       proposed_priority_change = Map.get(attrs, "priority")
       current_record_count = Repo.aggregate(from(t in Todo), :count)
 
-      IO.puts(current_record_count)
-
       if current_record_count >= proposed_priority_change do
         current_todo_id = todo.id
         move_todo(current_todo_id, proposed_priority_change)
@@ -89,9 +108,6 @@ defmodule TodoJsonApi.Todos do
         todo
         |> Todo.changeset(attrs)
         |> Repo.update()
-      else
-        # Todo: Return JSON Error
-        IO.puts("Error!")
       end
     else
       todo
@@ -133,7 +149,8 @@ defmodule TodoJsonApi.Todos do
     Todo.changeset(todo, attrs)
   end
 
-  # Reorders the list of items in Todo table based on priority, in ascending manner
+  # Reorders the list of items in Todo table based on priority,
+  # in ascending manner
   defp update_priority() do
     Repo.all(
       from(
