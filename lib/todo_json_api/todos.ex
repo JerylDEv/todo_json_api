@@ -59,7 +59,7 @@ defmodule TodoJsonApi.Todos do
       current_record_count = Repo.aggregate(from(t in Todo), :count)
       latest_index = current_record_count + 1
 
-      if latest_index >= proposed_priority_change do
+      if proposed_priority_change in 1..latest_index do
         if current_record_count == 0 do
           updated_attrs = Map.put(attrs, "priority", latest_index)
 
@@ -82,7 +82,7 @@ defmodule TodoJsonApi.Todos do
       else
         %{
           error:
-            "Assigned 'priority' (#{proposed_priority_change}) is greater than allowed (#{latest_index})."
+            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to#{latest_index}]."
         }
       end
     else
@@ -115,7 +115,7 @@ defmodule TodoJsonApi.Todos do
       proposed_priority_change = Map.get(attrs, "priority")
       current_record_count = Repo.aggregate(from(t in Todo), :count)
 
-      if current_record_count >= proposed_priority_change do
+      if proposed_priority_change in 1..current_record_count do
         current_todo_id = todo.id
         move_todo(current_todo_id, proposed_priority_change)
 
@@ -125,7 +125,7 @@ defmodule TodoJsonApi.Todos do
       else
         %{
           error:
-            "Assigned 'priority' (#{proposed_priority_change}) is greater than allowed (#{current_record_count})."
+            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{current_record_count}]."
         }
       end
     else
