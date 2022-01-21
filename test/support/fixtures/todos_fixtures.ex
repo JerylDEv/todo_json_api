@@ -11,10 +11,10 @@ defmodule TodoJsonApi.TodosFixtures do
     {:ok, todo} =
       attrs
       |> Enum.into(%{
-        details: "some details",
-        is_complete: true,
-        priority: 42,
-        task: "some task"
+        "details" => "some details",
+        "is_complete" => true,
+        "priority" => 1,
+        "task" => "some task"
       })
       |> TodoJsonApi.Todos.create_todo()
 
