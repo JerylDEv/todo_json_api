@@ -17,6 +17,8 @@ defmodule TodoJsonApiWeb.TodoController do
       |> put_status(:created)
       |> put_resp_header("location", Routes.todo_path(conn, :show, todo))
       |> render("show.json", todo: todo)
+    else
+      error -> conn |> render("error.json", error)
     end
   end
 
@@ -30,6 +32,8 @@ defmodule TodoJsonApiWeb.TodoController do
 
     with {:ok, %Todo{} = todo} <- Todos.update_todo(todo, todo_params) do
       render(conn, "show.json", todo: todo)
+    else
+      error -> conn |> render("error.json", error)
     end
   end
 

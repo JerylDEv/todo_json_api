@@ -59,12 +59,14 @@ defmodule TodoJsonApi.Todos do
       current_record_count = Repo.aggregate(from(t in Todo), :count)
       latest_index = current_record_count + 1
 
-      if current_record_count == 0 do
-        %Todo{}
-        |> Todo.changeset(attrs)
-        |> Repo.insert()
-      else
-        if latest_index >= proposed_priority_change do
+      if latest_index >= proposed_priority_change do
+        if current_record_count == 0 do
+          updated_attrs = Map.put(attrs, "priority", latest_index)
+
+          %Todo{}
+          |> Todo.changeset(updated_attrs)
+          |> Repo.insert()
+        else
           {:ok, %Todo{} = todo} =
             %Todo{}
             |> Todo.changeset(attrs)
@@ -77,6 +79,11 @@ defmodule TodoJsonApi.Todos do
           |> Todo.changeset(attrs)
           |> Repo.update()
         end
+      else
+        %{
+          error:
+            "Assigned 'priority' (#{proposed_priority_change}) is greater than allowed (#{latest_index})."
+        }
       end
     else
       current_record_count = Repo.aggregate(from(t in Todo), :count)
@@ -115,6 +122,11 @@ defmodule TodoJsonApi.Todos do
         todo
         |> Todo.changeset(attrs)
         |> Repo.update()
+      else
+        %{
+          error:
+            "Assigned 'priority' (#{proposed_priority_change}) is greater than allowed (#{current_record_count})."
+        }
       end
     else
       todo
