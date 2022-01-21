@@ -14,6 +14,10 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 You can download the [Postman Collection](https://www.getpostman.com/collections/4723abd2de317b7a8071) that I created to test this project.
 
+## Run Tests
+
+You can also run the tests with 'mix test'.
+
 ## Learn more
 
   * Official website: https://www.phoenixframework.org/
