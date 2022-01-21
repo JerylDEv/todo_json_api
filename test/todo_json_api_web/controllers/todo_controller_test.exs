@@ -50,7 +50,7 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, Routes.todo_path(conn, :create), todo: @invalid_attrs)
-      assert json_response(conn, 200)["errors"] != %{}
+      assert json_response(conn, 400) == %{"error" => "Invalid todo values"}
     end
   end
 
@@ -75,7 +75,7 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
     test "renders errors when data is invalid", %{conn: conn, todo: todo} do
       conn = put(conn, Routes.todo_path(conn, :update, todo), todo: @invalid_attrs)
 
-      assert json_response(conn, 200) == %{"error" => "Invalid todo values"}
+      assert json_response(conn, 400) == %{"error" => "Invalid todo values"}
     end
   end
 
@@ -90,7 +90,7 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
 
       conn_2 = get(conn, Routes.todo_path(conn, :show, todo))
 
-      assert response(conn_2, 200) ==
+      assert response(conn_2, 400) ==
                "{\"error\":\"Todo not found.\"}"
     end
   end

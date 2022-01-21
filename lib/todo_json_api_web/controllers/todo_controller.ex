@@ -18,7 +18,7 @@ defmodule TodoJsonApiWeb.TodoController do
       |> put_resp_header("location", Routes.todo_path(conn, :show, todo))
       |> render("show.json", todo: todo)
     else
-      error -> conn |> render("error.json", error)
+      error -> conn |> put_status(:bad_request) |> render("error.json", error)
     end
   end
 
@@ -26,7 +26,9 @@ defmodule TodoJsonApiWeb.TodoController do
     todo = Todos.get_todo!(id)
 
     if Map.has_key?(todo, :error) do
-      render(conn, "error.json", todo)
+      conn
+      |> put_status(:bad_request)
+      |> render("error.json", todo)
     else
       render(conn, "show.json", todo: todo)
     end
@@ -36,12 +38,17 @@ defmodule TodoJsonApiWeb.TodoController do
     todo = Todos.get_todo!(id)
 
     if Map.has_key?(todo, :error) do
-      render(conn, "error.json", todo)
+      conn
+      |> put_status(:bad_request)
+      |> render("error.json", todo)
     else
       with {:ok, %Todo{} = todo} <- Todos.update_todo(todo, todo_params) do
         render(conn, "show.json", todo: todo)
       else
-        error -> conn |> render("error.json", error)
+        error ->
+          conn
+          |> put_status(:bad_request)
+          |> render("error.json", error)
       end
     end
   end
@@ -50,7 +57,9 @@ defmodule TodoJsonApiWeb.TodoController do
     todo = Todos.get_todo!(id)
 
     if Map.has_key?(todo, :error) do
-      render(conn, "error.json", todo)
+      conn
+      |> put_status(:bad_request)
+      |> render("error.json", todo)
     else
       with {:ok, %Todo{}} <- Todos.delete_todo(todo) do
         render(conn, "deleted.json", message: "Todo '#{id}' was deleted.")
