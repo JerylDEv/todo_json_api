@@ -82,7 +82,7 @@ defmodule TodoJsonApi.Todos do
       else
         %{
           error:
-            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to#{latest_index}]."
+            "Assigned 'priority' [#{proposed_priority_change}] is out of allowed range [1 to #{latest_index}]."
         }
       end
     else

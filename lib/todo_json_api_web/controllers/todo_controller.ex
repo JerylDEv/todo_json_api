@@ -41,7 +41,7 @@ defmodule TodoJsonApiWeb.TodoController do
     todo = Todos.get_todo!(id)
 
     with {:ok, %Todo{}} <- Todos.delete_todo(todo) do
-      send_resp(conn, :no_content, "")
+      render(conn, "deleted.json", message: "Todo '#{id}' was deleted.")
     end
   end
 end
