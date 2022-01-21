@@ -8,15 +8,17 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
   @create_attrs %{
     details: "some details",
     is_complete: true,
-    priority: 42,
+    priority: 1,
     task: "some task"
   }
+
   @update_attrs %{
     details: "some updated details",
     is_complete: false,
-    priority: 43,
+    priority: 1,
     task: "some updated task"
   }
+
   @invalid_attrs %{details: nil, is_complete: nil, priority: nil, task: nil}
 
   setup %{conn: conn} do
@@ -41,14 +43,14 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
                "id" => ^id,
                "details" => "some details",
                "is_complete" => true,
-               "priority" => 42,
+               "priority" => 1,
                "task" => "some task"
              } = json_response(conn, 200)["data"]
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, Routes.todo_path(conn, :create), todo: @invalid_attrs)
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 200)["errors"] != %{}
     end
   end
 
@@ -65,14 +67,17 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
                "id" => ^id,
                "details" => "some updated details",
                "is_complete" => false,
-               "priority" => 43,
+               "priority" => 1,
                "task" => "some updated task"
              } = json_response(conn, 200)["data"]
     end
 
     test "renders errors when data is invalid", %{conn: conn, todo: todo} do
       conn = put(conn, Routes.todo_path(conn, :update, todo), todo: @invalid_attrs)
-      assert json_response(conn, 422)["errors"] != %{}
+
+      assert json_response(conn, 200) == %{
+               "error" => "Assigned 'priority' [] is out of allowed range [1 to 1]."
+             }
     end
   end
 
@@ -80,12 +85,15 @@ defmodule TodoJsonApiWeb.TodoControllerTest do
     setup [:create_todo]
 
     test "deletes chosen todo", %{conn: conn, todo: todo} do
-      conn = delete(conn, Routes.todo_path(conn, :delete, todo))
-      assert response(conn, 204)
+      conn_1 = delete(conn, Routes.todo_path(conn, :delete, todo))
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.todo_path(conn, :show, todo))
-      end
+      assert response(conn_1, 200) ==
+               "{\"message\":\"Todo '#{todo.id}' was deleted.\"}"
+
+      conn_2 = get(conn, Routes.todo_path(conn, :show, todo))
+
+      assert response(conn_2, 200) ==
+               "{\"error\":\"Todo not found.\"}"
     end
   end
 
