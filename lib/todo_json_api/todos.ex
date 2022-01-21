@@ -57,19 +57,26 @@ defmodule TodoJsonApi.Todos do
     if Map.has_key?(attrs, "priority") do
       proposed_priority_change = Map.get(attrs, "priority")
       current_record_count = Repo.aggregate(from(t in Todo), :count)
+      latest_index = current_record_count + 1
 
-      if current_record_count >= proposed_priority_change do
-        {:ok, %Todo{} = todo} =
-          %Todo{}
-          |> Todo.changeset(attrs)
-          |> Repo.insert()
-
-        current_todo_id = todo.id
-        move_todo(current_todo_id, proposed_priority_change)
-
-        todo
+      if current_record_count == 0 do
+        %Todo{}
         |> Todo.changeset(attrs)
-        |> Repo.update()
+        |> Repo.insert()
+      else
+        if latest_index >= proposed_priority_change do
+          {:ok, %Todo{} = todo} =
+            %Todo{}
+            |> Todo.changeset(attrs)
+            |> Repo.insert()
+
+          current_todo_id = todo.id
+          move_todo(current_todo_id, proposed_priority_change)
+
+          todo
+          |> Todo.changeset(attrs)
+          |> Repo.update()
+        end
       end
     else
       current_record_count = Repo.aggregate(from(t in Todo), :count)
