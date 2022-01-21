@@ -19,4 +19,8 @@ defmodule TodoJsonApiWeb.TodoView do
       is_complete: todo.is_complete
     }
   end
+
+  def render("error.json", %{error: error}) do
+    %{error: error}
+  end
 end
